@@ -37,7 +37,6 @@ export const Login: React.FC = () => {
 
         },
         onError: (error) => {
-            console.log(error);
             setSnackBarMessage(error.message)
             setOpenSnackBar(true)
         }
@@ -67,7 +66,8 @@ export const Login: React.FC = () => {
                         <Button loading={mutation.isPending} className="w-100" type="submit" variant="contained" loadingPosition="end">Login</Button>
 
                     </div>
-                    <Link to={'/signup'} >Create Account</Link>
+                    <span> Don't have an account?<Link to={'/signup'} className="text-sky-700" > Please sign up here</Link></span>
+                    
                 </form>
             </CardContent>
             <ApiSnackBar open={openSnackBar}

@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 export const Signup: React.FC = function () {
     const [openSnackBar, setOpenSnackBar] = useState<boolean>(false)
+    const [snackbarMessage,setSnackBarMessage] = useState<string>('')
     const navigate = useNavigate();
     const schema = yup.object().shape({
         name: yup.string().required(),
@@ -26,15 +27,14 @@ export const Signup: React.FC = function () {
         mutationKey: ['create_user'],
         mutationFn: submitUserData,
         onSuccess: () => {
-            setOpenSnackBar(true)
             navigate('/')
         },
-        onError: () => {
+        onError: (error) => {
             setOpenSnackBar(true);
+           setSnackBarMessage(error.message)
         },
     })
     const submitUser = function (userData: any): void {
-        console.log(userData);
         mutation.mutate(userData);
 
     }
@@ -67,7 +67,7 @@ export const Signup: React.FC = function () {
                             Submit
                         </Button>
                     </div>
-                    <div>Already have an account?  <Link to={'/'}> Click here to Login</Link> </div>
+                    <div>Already have an account?  <Link to={'/'} className="text-sky-700"> Click here to Login</Link> </div>
                 </form>
 
             </CardContent>
@@ -75,7 +75,7 @@ export const Signup: React.FC = function () {
         <ApiSnackBar open={openSnackBar}
             handleClose={handleClose}
             severity={mutation.isError ? 'error' : 'success'}
-            message={mutation.isSuccess ? 'User created Successfully' : 'Something went wrong'} />
+            message={mutation.isSuccess ? 'User created Successfully' : snackbarMessage} />
 
     </Container>
 }

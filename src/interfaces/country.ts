@@ -9,7 +9,6 @@ export interface Country {
 }
 export interface CountryWithWeather extends Country {
     temperature: number,
-    formatedTime: string,
     windspeed: string,
     is_day: number
 }

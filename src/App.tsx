@@ -11,8 +11,10 @@ import { setUser } from './features/userSlice'
 
 function App() {
   const user = useSelector((state: RootState) => state.user);
+  
   const userId: string | null = sessionStorage.getItem('userId')
   const dispatch = useDispatch()
+  console.log(user);
   const { data: userData } = useQuery({
     queryKey: ['refresh_token'],
     queryFn: refreshToken,

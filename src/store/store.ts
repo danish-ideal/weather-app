@@ -7,7 +7,8 @@ const store  = configureStore({
         user:userReducer
     }
 })
-console.log("Current Redux State:", store.getState());
+console.log(store.getState());
+
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 

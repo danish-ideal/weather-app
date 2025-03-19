@@ -3,16 +3,8 @@ import { createUser, loginUser } from "../interfaces/user";
 import api from "../services/api";
 
 export const submitUserData =async function(userData:createUser){
-      try {
             const response =  await api.post('users/create',userData)
-   
-   
-            return response.data    
-      } catch (error) {
-            console.log(error);
-            
-      }
-
+              return response.data    
   }
  
 export const submitLogin = async function (userData:loginUser){

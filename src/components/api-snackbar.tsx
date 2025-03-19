@@ -4,7 +4,6 @@ import { ApiSnackBarProps } from "../interfaces/user";
 
 
 const ApiSnackBar:React.FC<ApiSnackBarProps> = function ApiSnackBar({ open, handleClose, severity, message }) {
-  console.log("called", open, severity, message);
 
   return (
     <Snackbar

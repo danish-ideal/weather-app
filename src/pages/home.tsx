@@ -1,5 +1,5 @@
 
-import { Autocomplete, Avatar, Container, List, ListItem, ListItemAvatar, ListItemText, TextField } from "@mui/material";
+import { Autocomplete, Avatar, CircularProgress, Container, List, ListItem, ListItemAvatar, ListItemText, TextField } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Country, CountryWithWeather } from "../interfaces/country";
@@ -7,8 +7,8 @@ import { fetchCountires, fetchUserCountries, sumbitCountry } from "../services/c
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import ApiSnackBar from "../components/api-snackbar";
-import { useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
+import { WiDaySunny, WiNightClear } from "react-icons/wi"; // Weather icons
 
 
 enum Severity {
@@ -23,18 +23,21 @@ export const LandingPage: React.FC = () => {
   const [openSnackbar, setOpenSnackBar] = useState<boolean>(false);
   const [severity, setSeverity] = useState<Severity>(Severity.success)
   const [snackbarMessage, setSnackBarMessage] = useState<string>('');
+  const [countryLoading,setCountryLoading] = useState<boolean>(false)
   const user = useSelector((state: RootState) => state.user)
-  const navigate = useNavigate()
   const mutation = useMutation({
     mutationKey: ['country'],
     mutationFn: sumbitCountry,
     onSuccess: (result: CountryWithWeather) => {
       setSelectedCountry([...selectedCountries, result])
     },
-    onError: () => {
-      setSnackBarMessage('Something went wrong . Please try again later')
+    onError: (error) => {
+      setSnackBarMessage(error.message)
       setSeverity(Severity.error)
       setOpenSnackBar(true)
+    },
+    onSettled:()=>{
+      setCountryLoading(false)
     }
   })
 
@@ -49,28 +52,20 @@ export const LandingPage: React.FC = () => {
   })
 
 
+const { data:countryData, isLoading:userCountryLoading} = useQuery({
+    queryKey: ["userCountries", user.id], 
+    queryFn: () => fetchUserCountries(user.id),
+    refetchInterval: 30000, 
+  });
+
   useEffect(() => {
-    try {
-      const fetchUserCountriesApi = async () => {
-        let result = await fetchUserCountries(user.id)
-        setSelectedCountry([...result])
-      }
-      fetchUserCountriesApi()
-    } catch (error: any) {
-      if (error) {
-        navigate('/')
-      }
-      console.log(error);
-
-    }
-
-  }, [user.id])
+    if (countryData) setSelectedCountry([...countryData]);
+  }, [countryData]);
   const getCountryDetailsWithWeather = (countryName: any): void => {
-    console.log(countryName);
+    
     const countrydetails = data?.find((country: any) => country.name.common === countryName);
     if (countrydetails) {
-      console.log(countrydetails);
-
+      setCountryLoading(true)
       const { latlng, flags } = countrydetails;
       let obj: Country = {
         latitude: latlng[0],
@@ -107,22 +102,51 @@ export const LandingPage: React.FC = () => {
             label='Search country' />}
         />
       </div>
+      <h2 className="font-bold text-lg">Your Weather Watchlist</h2>
+     {countryLoading || userCountryLoading && < CircularProgress size="30px" />} 
       {
         selectedCountries.length > 0 && selectedCountries.map((selectedCountry) => {
           return <List className="mt-5" key={selectedCountry.name} sx={{ width: '100%', maxWidth: 360 }}>
-            <ListItem alignItems="center" sx={{ bgcolor: '#e6ee9c', borderRadius: 6 }}>
-              <ListItemAvatar>
-                <Avatar alt={selectedCountry?.flags.alt} src={selectedCountry?.flags.svg} />
-              </ListItemAvatar>
-              <ListItemText primary={selectedCountry?.name} secondary={
-                <span className="flex flex-col">
-                  <span>Time : {selectedCountry.formatedTime}</span>
-                  <span>Temperature: {selectedCountry.temperature} C</span>
-                  <span>Wind Speed: {selectedCountry.windspeed} Km/h</span>
-                  <span>{selectedCountry.is_day > 0 ? 'Day' : 'Night'}</span>
-                </span>
-              } />
-            </ListItem>
+          <ListItem
+  alignItems="center"
+  className={`rounded-2xl p-5
+   shadow-lg
+    transition-all
+    duration-300 
+    flex items-center gap-4 
+    "bg-yellow-500 text-gray-900"`}
+>
+  <ListItemAvatar>
+    <Avatar
+      alt={selectedCountry?.flags?.alt}
+      src={selectedCountry?.flags?.svg}
+      className="w-14 h-14 border-2 border-white shadow-md"
+    />
+  </ListItemAvatar>
+
+  <ListItemText
+    primary={
+      <div className="flex items-center gap-2 text-lg font-semibold">
+        {selectedCountry?.name}
+        {selectedCountry?.is_day > 0 ? (
+          <WiDaySunny className="text-yellow-600 text-2xl" />
+        ) : (
+          <WiNightClear className="text-blue-300 text-2xl" />
+        )}
+      </div>
+    }
+    secondary={
+      <div className="flex flex-col text-sm">
+        <span>🌡 Temperature: {selectedCountry?.temperature}°C</span>
+        <span>💨 Wind Speed: {selectedCountry?.windspeed} Km/h</span>
+        <span>
+          {selectedCountry?.is_day > 0 ? "☀️ Daytime" : "🌙 Night time"}
+        </span>
+      </div>
+    }
+  />
+</ListItem>
+
 
           </List>
         })

@@ -16,9 +16,9 @@ api.interceptors.request.use((config)=>{
 api.interceptors.response.use(
     (response)=>response,
     (error)=>{
-        console.log(error);
-        
-        return Promise.reject(new Error(error))
+        const errorMessage:string =
+        error.response?.data?.message || error.message || "Something went wrong. Please try again later";        
+        return Promise.reject(new Error(errorMessage))
     }
 )
 export default api
